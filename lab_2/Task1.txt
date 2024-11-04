@@ -1,0 +1,22 @@
+#include <stdio.h>
+#include <stm32f10x.h>
+int main() {
+    int a = 5;
+    int b = 3;
+
+    int lhs = (a + b) * (a + b);
+
+    int rhs = (a * a) + (2 * a * b) + (b * b);
+
+    //printf("For a = %d and b = %d:\n", a, b);
+    //printf("(a + b)^2 = %d\n", lhs);
+    //printf("a^2 + 2ab + b^2 = %d\n", rhs);
+
+    if (lhs == rhs) {
+        printf("The equation (a + b)^2 = a^2 + 2ab + b^2 is verified.\n");
+    } else {
+        printf("The equation does not hold.\n");
+    }
+
+    return 0;
+}
