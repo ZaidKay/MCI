@@ -1,0 +1,27 @@
+#include <stdio.h>
+#include <stm32f10x.h>
+#include <string.h>
+
+// Function to encrypt/decrypt data
+void xorEncryptDecrypt(char *data, unsigned char key) {
+    for (int i = 0; i < strlen(data); i++) {
+        data[i] ^= key;
+    }
+}
+
+int main() {
+    char userData[] = "Habib University";
+
+    unsigned char key = 0x28;
+    printf("Original data: %s\n", userData);
+
+    // Encrypt the data
+    xorEncryptDecrypt(userData, key);
+    printf("Encrypted data: %s\n", userData);
+
+    // Decrypt the data (by XORing again with the same key)
+    xorEncryptDecrypt(userData, key);
+    printf("Decrypted data: %s\n", userData);
+
+    return 0;
+}

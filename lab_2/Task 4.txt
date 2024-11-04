@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <stm32f10x.h>
+#include <string.h>
+#include <math.h>
+
+int main() {
+    int num, originalNum, digit1, digit2, digit3;
+    int armstrongCount = 0;
+
+    printf("Armstrong numbers between 100 and 999 are:\n");
+
+    for (num = 100; num <= 999; num++) {
+        originalNum = num;
+
+        digit1 = originalNum / 100;
+        digit2 = (originalNum / 10) % 10;
+        digit3 = originalNum % 10;
+
+        if ((pow(digit1, 3) + pow(digit2, 3) + pow(digit3, 3)) == num) {
+            printf("%d\n", num);
+            armstrongCount++;
+            // Break if we have found at least 2 Armstrong numbers
+            if (armstrongCount >= 2) {
+                break;
+            }
+        }
+    }
+
+    if (armstrongCount == 0) {
+        printf("No Armstrong numbers found in the range.\n");
+    }
+
+    return 0;
+}
