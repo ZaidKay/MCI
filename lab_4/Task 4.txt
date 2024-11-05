@@ -1,0 +1,141 @@
+//////////////////////////////////////////
+//Ultrasonic Pins Definition, here we specify pin usage for our tivaC Board
+const int echo = 9, Trig = 10; //Pin connections for HC-SR04
+const int LED1 = 11; //Specify Pin for LED1
+const int LED2 = 12; //Specify Pin for LED2
+const int LED3 = 13; //Specify Pin for LED3
+const int SW1 = 17;
+const int SW2 = 31;
+////////////////////////////////////////////////////
+//Time Update Variables
+int count = 0; int average = 0;
+long duration, cm; //To measure pulse width and distance in cm
+long distance = 0; //To return distance of object
+unsigned long LastUpdateMicrosecs = 0; 
+unsigned long LastUpdateMillisecs = 0;
+unsigned long CurrentMicrosecs = 0;
+unsigned long MicrosecsSinceLastUpdate = 0;
+float SecondsSinceLastUpdate = 0;
+bool State = true;
+void SystemState();
+long microsecondsToCentimeters(long microseconds);
+////////////////////////////////////////////////////
+//Initializing Pins Function
+void setup()
+{
+ Serial.begin(115200); //Initialize Serial COM Port with 115200 buad rate
+ pinMode(Trig, OUTPUT); //Trigger is output since it will send 8 pulses at 40KHz from HC-SR04
+ pinMode(echo, INPUT); //Echo is input since it will detect the reflected wave from HC-SR04
+ pinMode(LED1, OUTPUT); //Pin for LED1 should output HIGH(on) or LOW(off)
+ pinMode(LED2, OUTPUT);
+ pinMode(LED3, OUTPUT);
+ pinMode(SW1, INPUT);
+ pinMode(SW2, INPUT);
+}
+////////////////////////////////////////////////////
+//Main Loop that will keep on running, it is similar to int main()
+void loop()
+{ 
+ count++;
+ delayMicroseconds(150); //Delay between prints on Serial Monitor
+ average += Update_Ultra_Sonic(); //This function operates HC-SR04;
+ if (count == 15)
+ {
+ average = average/count;
+ //Sending through serial port to print on Monitor
+ Serial.print("Average =");
+ Serial.print("\t");
+ Serial.print(average);
+ Serial.print("\n");
+ count = 0;
+ }
+}
+////////////////////////////////////////////////////
+//Will update ultrasonic sensors through Serial port
+int Update_Ultra_Sonic()
+{
+ //Setting Trig Signal HIGH for 10us to produce burst of 8 pulses at 40KHz
+ digitalWrite(Trig, LOW);
+ delayMicroseconds(2);
+digitalWrite(Trig, HIGH);
+ delayMicroseconds(10);
+ digitalWrite(Trig, LOW);
+ duration = pulseIn(echo, HIGH); // Reads duration (microseconds) for which Echo pin reads HIGH till wave is reflected
+ cm = microsecondsToCentimeters(duration); // convert the time into a distance, refer to function below
+ 
+ if (digitalRead(SW2) == HIGH)
+ {
+ 
+ State = false;
+ digitalWrite(LED1, LOW);
+ digitalWrite(LED2, LOW);
+ digitalWrite(LED3, LOW);
+ return 0;
+ }
+ 
+ if (State == true)
+ {
+ if (cm > 100)
+ {
+ digitalWrite(LED1, HIGH);
+ delayMicroseconds(2000);
+ digitalWrite(LED2, HIGH);
+ delayMicroseconds(2000);
+ digitalWrite(LED3, HIGH);
+ delayMicroseconds(500000);
+ digitalWrite(LED1, LOW);
+ delayMicroseconds(2000);
+ digitalWrite(LED2, LOW);
+ delayMicroseconds(2000);
+ digitalWrite(LED3, LOW);
+ }
+ 
+ else if (cm > 15 && cm < 30)
+ {
+ digitalWrite(LED1, HIGH);
+ digitalWrite(LED2, LOW);
+ digitalWrite(LED3, LOW); 
+ }
+ else if (cm > 5 && cm < 15)
+ {
+ digitalWrite(LED1, HIGH);
+  delayMicroseconds(2000);
+
+ digitalWrite(LED2, HIGH);
+  delayMicroseconds(2000);
+
+ digitalWrite(LED3, LOW);
+ 
+ }
+ else if (cm < 5)
+{
+ digitalWrite(LED1, HIGH);
+  delayMicroseconds(2000);
+
+ digitalWrite(LED2, HIGH);
+  delayMicroseconds(2000);
+
+ digitalWrite(LED3, HIGH);
+ }
+ else
+ {
+ digitalWrite(LED1, LOW);
+ digitalWrite(LED2, LOW);
+ digitalWrite(LED3, LOW); 
+ }
+ }
+ return cm;
+}
+////////////////////////////////////////////////////
+//Conversion of microsecond to centimeter
+long microsecondsToCentimeters(long microseconds)
+{
+// The speed of sound is 340d is 340 m/s or 29 microseconds per centimeter.
+ 
+// convert speed of sound from m/s to cm/us
+// Use the formula: distance(cm) = speed(cm/us) * time(us)
+// Write distance formula here
+ distance = microseconds/29;
+// We take half of the distance travelled since its a reflected wave
+return distance / 2;
+}
