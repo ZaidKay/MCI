@@ -1,0 +1,50 @@
+Some portion of code is removed for better readibility
+
+#define GPIO_PORT_CLK_EN    0x22      // Clock enable for Port B and Port F
+
+// Array which containts the hexadecimal values to display numbers 1-6 on 7-segment display
+seven_seg_digits[6] = {0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82}; // Display for numbers 1 to 6
+
+void Delay(unsigned int);
+void PORTB_Init(void);   // Initialize Port B
+void PORTF_Init(void);   // Initialize Port F
+
+int main(void) {
+    PORTB_Init();   // Initialize Port B 
+    PORTF_Init();   // Initialize Port F
+
+    while (1) {
+        if ((GPIO_PORTF_DATA_R & 0x10) == 0) {  // Check if SW1 is pressed (0 means pressed)
+            int dice_value = (rand() % 6) + 1;  // code which generates a random number, and then by taking the modulus with 6, we are left with numbers ranging from 0 to 5, addding one to get numbers from 1 to 6
+            GPIO_PORTB_DATA_R = seven_seg_digits[dice_value - 1]; // Display the number on 7-segment display attached with TivaC
+            Delay(100);  // Short delay introduced
+        }
+    }
+}
+
+// Delay function for debouncing, 100 ms delay
+void Delay(unsigned int delay) {
+    volatile unsigned int i, counter;
+    counter = delay * 4000;  // Rough approximation for a 100ms delay
+    for (i = 0; i < counter; i++);
+}
+
+// Initialize Port B (used for 7-segment display)
+void PORTB_Init(void) {
+    SYSCTL_RCGCGPIO_R |= GPIO_PORT_CLK_EN;    // Enable clock for Port B and Port F
+    Delay(10);                                // Small delay for clock setup
+    GPIO_PORTB_DEN_R = 0xFF;                  // Enable all pins of Port B
+    GPIO_PORTB_DIR_R = 0xFF;                  // Set all Port B pins as output
+    GPIO_PORTB_PCTL_R &= ~(0xFF);             // Regular GPIO function
+    GPIO_PORTB_AMSEL_R &= ~(0xFF);            // Disable analog function on Port B
+    GPIO_PORTB_AFSEL_R &= ~(0xFF);            // Regular function
+}
+
+// Initialize Port F (used for SW1)
+void PORTF_Init(void) {
+    GPIO_PORTF_LOCK_R = 0x4C4F434B;   // Unlock GPIO Port F
+    GPIO_PORTF_CR_R = 0x11;           // Enable commits for PF0 and PF4
+    GPIO_PORTF_PUR_R |= 0x10;         // Enable pull-up resistor for PF4 (SW1)
+    GPIO_PORTF_DEN_R = 0x1F;          // Enable digital function for PF0-PF4
+    GPIO_PORTF_DIR_R = 0x00;          // Set PF0-PF4 as input (for switches)
+}

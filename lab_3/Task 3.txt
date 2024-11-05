@@ -1,0 +1,71 @@
+Some portion of code is removed for better readability
+
+#define GPIO_PORT_CLK_EN  0x22  // Enable clock for PORTB and PORTF
+
+
+const unsigned char digits_array[10] = {0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82,  0xF8,  0x80,  0x90};
+
+// Function prototypes
+void Delay(unsigned int delay);
+void PORTB_Init(void);  // PORTB 
+void PORTF_Init(void);  // PORTF 
+int debounceSW1(void);
+int debounceSW2(void);
+
+int main(void) {
+    int current_digit = 0;  // Starting from 0
+
+    PORTB_Init();  
+    PORTF_Init();
+
+    while(1) {
+        // Check SW1 state (count up)
+        if (debounceSW1() == 0) {
+            current_digit++;
+            if (current_digit > 9)   // reset to 0 if current digit exceeds 9
+{current_digit = 0;
+        }
+
+        // Check SW2 state (count down)
+        if (debounceSW2() == 0) {
+            current_digit--;
+            if (current_digit < 0) {
+current_digit = 9;
+        }
+
+        // Output the digit to the 7-segment display
+        GPIO_PORTB_DATA_R = digits_array[current_digit];
+
+        Delay(200);  // Debouncing delay
+    }
+}
+
+// Debouncing function for SW1 (returns 0 if pressed)
+int debounceSW1(void) {
+    if ((GPIO_PORTF_DATA_R & 0x10) == 0) {  // SW1 pressed
+        Delay(10);  // Delay for debouncing
+        if ((GPIO_PORTF_DATA_R & 0x10) == 0) {  // Still pressed
+            return 0;
+        }
+    }
+    return 1;  // if not pressed
+}
+
+// Debouncing function for SW2 (returns 0 if pressed)
+int debounceSW2(void) {
+    if ((GPIO_PORTF_DATA_R & 0x01) == 0) {  // SW2 pressed
+        Delay(10);  // Delay for debouncing
+        if ((GPIO_PORTF_DATA_R & 0x01) == 0) {  // Still pressed
+            return 0;
+        }
+    }
+    return 1;  // Not pressed
+}
+
+// Delay function (approx 1 millisecond per unit)
+void Delay(unsigned int delay) {
+    volatile unsigned int i, counter;
+    counter = delay * 4000;
+    for(i = 0; i < counter; i++);
+}
+.....Code removed for better readibility

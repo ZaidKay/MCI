@@ -1,0 +1,66 @@
+Some portion of given code is removed for better readibility
+ 
+#define GPIO_PORT_CLK_EN  0x22      /* enable clock for PORTB and PORTF*/
+
+void Delay(unsigned int);
+void PORTB_Init(void);   //PORTB Initialization function
+void PORTF_Init(void);   //PORTF Initialization function
+
+int main(void)
+{
+ // Hex codes for each digit of the student ID 08128
+ unsigned char studentID[] = {0xC0,  0x80,  0xF9, 0xA4,0x80 };
+ int current_digit_at_display = 0;  // Index to keep track of which digit to display
+ 
+ PORTB_Init();  // Initialize PORTB 
+ PORTF_Init();  // Initialize PORTF
+
+ while(1)
+ {
+        // Code to check if Switch 1 is pressed
+        if ((GPIO_PORTF_DATA_RD & 0x10) == 0)
+        {
+            GPIO_PORTB_DATA_R = studentID[current_digit_at_display];  
+            
+            current_digit_at_display++;  // Move to the next digit
+            if (current_digit_at_display >= 5) // Reset to zero if the index exceeds the number of digits of my student ID
+            {
+                current_digit_at_display = 0;
+            }
+
+            Delay(100);  // Debounce delay
+            while((GPIO_PORTF_DATA_RD & 0x10) == 0); // Wait until button is released
+        }
+ }
+}
+
+void Delay(unsigned int delay)
+{
+ volatile unsigned int i, counter;
+ counter = delay * 4000;  // 1 second (1000 msec) needs 40000000 counter so 4000000/1000 = 4000
+ for(i=0;i<counter;i++);
+}
+
+
+void PORTB_Init(void)
+{
+ SYSCTL_RCGCGPIO_R |= GPIO_PORT_CLK_EN;            // activate clock for Port B and F
+    Delay(10);                          // Delay 10 msec to allow clock to start on PORTs  
+    GPIO_PORTB_DEN_R = 0xFF;                  // Enable all pins of PORTB
+    GPIO_PORTB_DIR_R = 0xFF;                  // Make all pins of PORTB as ouptut pin
+ GPIO_PORTB_PCTL_R &= ~(0xFF) ;           // Regular GPIO of PORTB
+    GPIO_PORTB_AMSEL_R &= ~(0xFF);              // Disable analog function on all pins of PORTB
+ GPIO_PORTB_AFSEL_R &= ~(0xFF);              // Regular port function
+             // Configure PORTF Pins as input pins
+}
+
+
+void PORTF_Init(void)
+{
+    GPIO_PORTF_LOCK_R = 0x4C4F434B;             // unlock GPIOFCR register
+ GPIO_PORTF_CR_R = 0x11;              // enable commits for F0 and F4
+ GPIO_PORTF_PUR_R |= 0x11;             // Pull up resistor for F0 and F4
+ GPIO_PORTF_LOCK_R = 0x00;              // lock GPIOFCR register
+ GPIO_PORTF_DEN_R  = 0xFF;              // Enable PORTF
+ GPIO_PORTF_DIR_R  = 0x00;  
+}
