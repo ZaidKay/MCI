@@ -1,0 +1,61 @@
+bool ON = false;
+
+///////////////////////////////////////////////////////////
+void setup() {
+    // Initialize Serial port at 115200 Baud rate as per previous labs
+    // Initialize pin modes for Trig, Echo, and SW2 here as INPUT/OUTPUT as per previous labs
+    Serial.begin(115200);
+    pinMode(Servo_control_pin, OUTPUT); // To produce PWM signal at PF1 pin for servo control without library
+    pinMode(SW2, INPUT);
+    pinMode(Trig, OUTPUT);
+    pinMode(echo, INPUT);
+
+    // Use this for Task 02/03, comment out above one
+    // myservo.attach(Servo_control_pin); // Attaches the servo PWM pin on PF1 (30) using library
+}
+
+///////////////////////////////////////////////////////////
+void loop() {
+    // Task 01: PWM Generation using delay functions
+    // Go through servo_0_Degree(), complete servo_p90_Degree() and servo_m90_Degree() logic
+
+    servo_0_Degree();
+    delay(1000);
+    servo_p90_Degree();
+    delay(1000);
+    servo_0_Degree();
+    delay(1000);
+    servo_m90_Degree();
+    delay(1000);
+}
+
+
+void servo_0_Degree() {
+    // We use delayMicroseconds() instead of delay(ms)...
+    // ...since delayMicroseconds() are more precise and give accurate PWM
+
+    // Rotates servo to 0 degree, total pulse duration is 20ms
+    digitalWrite(Servo_control_pin, HIGH);
+    delayMicroseconds(1500); // High for 1.5ms, Duty Cycle of 7.5%
+    digitalWrite(Servo_control_pin, LOW);
+    delayMicroseconds(18500); // Off for remaining 18.5ms
+}
+
+void servo_p90_Degree() {
+    // Rotates servo to +90 degree, total pulse duration is 20ms
+    // Write your logic here for getting +90 degrees
+    digitalWrite(Servo_control_pin, HIGH);
+    delayMicroseconds(2000); // High for 2ms, Duty Cycle of 10%
+    digitalWrite(Servo_control_pin, LOW);
+    delayMicroseconds(18000); // Off for remaining 18ms
+}
+
+void servo_m90_Degree() {
+    // Rotates servo to -90 degree, total pulse duration is 20ms
+    // Write your logic here for getting -90 degrees
+    digitalWrite(Servo_control_pin, HIGH);
+    delayMicroseconds(1000); // High for 1ms, Duty Cycle of 5%
+    digitalWrite(Servo_control_pin, LOW);
+    delayMicroseconds(19000); // Off for remaining 19ms
+}
+
